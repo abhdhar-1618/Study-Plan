@@ -168,8 +168,8 @@ The result format is in the following example.
 */
 
 -- ANSWER_6:
--- Create the Employees table
 
+-- Create the Employees table
 
 CREATE TABLE Employees (
     id INT PRIMARY KEY,
@@ -206,3 +206,284 @@ SELECT * FROM EmployeeUNI;
 SELECT eu.unique_id, e.name
 FROM Employees e
 LEFT JOIN EmployeeUNI eu ON e.id = eu.id;
+
+/* 
+QUESTION_7:
+Write a solution to report the product_name, year, and price for each sale_id in the Sales table.
+Return the resulting table in any order.
+
+*/
+
+-- ANSWER_7:
+
+-- Creating the Sales table
+
+-- Creating the Sales table without the foreign key constraint
+CREATE TABLE Sales (
+    sale_id INT,
+    product_id INT,
+    year INT,
+    quantity INT,
+    price INT,
+    PRIMARY KEY (sale_id, year)
+);
+
+-- Create the Product table
+
+CREATE TABLE Product (
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(255)
+);
+
+
+-- Insert data into the Sales table
+INSERT INTO Sales (sale_id, product_id, year, quantity, price) VALUES
+    (1, 100, 2008, 10, 5000),
+    (2, 100, 2009, 12, 5000),
+    (7, 200, 2011, 15, 9000);
+
+-- Insert data into the Product table
+INSERT INTO Product (product_id, product_name) VALUES
+    (100, 'Nokia'),
+    (200, 'Apple'),
+    (300, 'Samsung');
+
+SELECT * FROM Sales;
+SELECT * FROM Product;
+
+
+-- ANSWER QUERY:
+
+SELECT P.product_name, S.year, S.price
+FROM Sales S
+JOIN Product P ON S.product_id = P.product_id;
+
+
+/* 
+QUESTION_8:
+
+Write a solution to find the IDs of the users who visited without making any transactions 
+and the number of times they made these types of visits.
+Return the result table sorted in any order.
+
+*/
+
+-- ANSWER_8:
+
+-- Create the Visits table
+CREATE TABLE Visits (
+    visit_id INT PRIMARY KEY,
+    customer_id INT
+);
+
+-- Create the Transactions table
+CREATE TABLE Transactions (
+    transaction_id INT PRIMARY KEY,
+    visit_id INT,
+    amount INT
+);
+
+-- Insert data into the Visits table
+INSERT INTO Visits (visit_id, customer_id) VALUES
+    (1, 23),
+    (2, 9),
+    (4, 30),
+    (5, 54),
+    (6, 96),
+    (7, 54),
+    (8, 54);
+    
+    -- Insert data into the Transactions table
+INSERT INTO Transactions (transaction_id, visit_id, amount) VALUES
+    (2, 5, 310),
+    (3, 5, 300),
+    (9, 5, 200),
+    (12, 1, 910),
+    (13, 2, 970);
+
+-- ANSWER QUERY:
+
+SELECT v.customer_id, COUNT(*) AS count_no_trans
+FROM Visits v
+LEFT JOIN Transactions t
+ON v.visit_id = t.visit_id
+WHERE t.transaction_id IS NULL
+GROUP BY v.customer_id;
+
+/* 
+QUESTION_9:
+
+Write a solution to find all dates' Id with higher temperatures compared to its previous dates (yesterday).
+Return the result table in any order.
+
+*/
+
+-- ANSWER_9:
+
+-- Creating the Weather table
+
+CREATE TABLE Weather (
+    id INT PRIMARY KEY,
+    recordDate DATE,
+    temperature INT
+);
+
+
+-- Addind data the Weather table:
+
+INSERT INTO Weather (id, recordDate, temperature)
+VALUES
+    (1, '2015-01-01', 10),
+    (2, '2015-01-02', 25),
+    (3, '2015-01-03', 20),
+    (4, '2015-01-04', 30);
+
+
+SELECT * FROM Weather
+
+-- ANSWER QUERY:
+
+SELECT w1.id
+FROM Weather w1
+JOIN Weather w2 ON w1.recordDate = DATE_ADD(w2.recordDate, INTERVAL 1 DAY)
+WHERE w1.temperature > w2.temperature;
+
+/* 
+QUESTION_10:
+There is a factory website that has several machines each running the same number of processes. 
+Write a solution to find the average time each machine takes to complete a process.The time to complete a process 
+is the 'end' timestamp minus the 'start' timestamp. The average time is calculated by the total time to complete 
+every process on the machine divided by the number of processes that were run.
+The resulting table should have the machine_id along with the average time as processing_time, 
+which should be rounded to 3 decimal places.Return the result table in any order.
+
+*/
+
+-- ANSWER_10:
+
+-- Crearing Activity table:
+
+CREATE TABLE Activity (
+    machine_id INT,
+    process_id INT,
+    activity_type ENUM('start', 'end'),
+    timestamp FLOAT,
+    PRIMARY KEY (machine_id, process_id, activity_type)
+);
+
+-- Recording data into Activity table
+
+INSERT INTO Activity (machine_id, process_id, activity_type, timestamp)
+VALUES
+    (0, 0, 'start', 0.712),
+    (0, 0, 'end', 1.520),
+    (0, 1, 'start', 3.140),
+    (0, 1, 'end', 4.120),
+    (1, 0, 'start', 0.550),
+    (1, 0, 'end', 1.550),
+    (1, 1, 'start', 0.430),
+    (1, 1, 'end', 1.420),
+    (2, 0, 'start', 4.100),
+    (2, 0, 'end', 4.512),
+    (2, 1, 'start', 2.500),
+    (2, 1, 'end', 5.000);
+
+
+-- ANSWER QUERY:
+
+SELECT a1.machine_id, ROUND(AVG(a2.timestamp - a1.timestamp), 3) AS processing_time
+FROM Activity a1
+JOIN Activity a2
+ON a1.machine_id = a2.machine_id
+AND a1.process_id = a2.process_id
+AND a1.activity_type = 'start'
+AND a2.activity_type = 'end'
+GROUP BY a1.machine_id;
+
+
+/* 
+QUESTION_11:
+Write a solution to report the name and bonus amount of each employee with a bonus less than 1000.
+Return the result table in any order.
+*/
+
+-- ANSWER 11:
+-- Create Employee table
+
+CREATE TABLE Employee (
+    empId INT PRIMARY KEY,
+    name VARCHAR(255),
+    supervisor INT,
+    salary INT
+);
+
+-- Create Bonus table
+CREATE TABLE Bonus (
+    empId INT PRIMARY KEY,
+    bonus INT,
+    FOREIGN KEY (empId) REFERENCES Employee(empId)
+);
+
+-- Insert data into Employee table
+INSERT INTO Employee (empId, name, supervisor, salary)
+VALUES
+    (3, 'Brad', NULL, 4000),
+    (1, 'John', 3, 1000),
+    (2, 'Dan', 3, 2000),
+    (4, 'Thomas', 3, 4000);
+
+-- Insert data into Bonus table
+INSERT INTO Bonus (empId, bonus)
+VALUES
+    (2, 500),
+    (4, 2000);
+
+
+-- ANSWER QUERY
+
+SELECT E.name, COALESCE(B.bonus, 'null') AS bonus
+FROM Employee E
+LEFT JOIN Bonus B ON E.empId = B.empId
+WHERE COALESCE(B.bonus, 0) < 1000;
+
+-- BUG IN LEETCODE EDITOR/ QUERY CHECKER FOR QUERY Employee Bonus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
