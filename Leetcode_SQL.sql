@@ -447,6 +447,333 @@ LEFT JOIN Bonus B ON E.empId = B.empId
 WHERE COALESCE(B.bonus, 0) < 1000;
 
 -- BUG IN LEETCODE EDITOR/ QUERY CHECKER FOR QUERY Employee Bonus
+-- Below query found in commented solutions which seem to work
+
+select e.name ,b.bonus from Employee e left join bonus b 
+on e.empId=b.empId
+where b.bonus<1000 or b.bonus is null
+
+/* 
+QUESTION_12:
+
+Write a solution to find the number of times each student attended each exam.
+Return the result table ordered by student_id and subject_name.
+The result format is in the following example.
+*/
+
+-- ANSWER 12:
+
+-- Create Students table
+CREATE TABLE Students (
+    student_id INT PRIMARY KEY,
+    student_name VARCHAR(255)
+);
+
+-- Insert data into Students table
+INSERT INTO Students (student_id, student_name) VALUES
+(1, 'Alice'),
+(2, 'Bob'),
+(13, 'John'),
+(6, 'Alex');
+
+-- Create Subjects table
+CREATE TABLE Subjects (
+    subject_name VARCHAR(255) PRIMARY KEY
+);
+
+
+-- Insert data into Subjects table
+INSERT INTO Subjects (subject_name) VALUES
+('Math'),
+('Physics'),
+('Programming');
+
+
+-- Create Examinations table
+CREATE TABLE Examinations (
+    student_id INT,
+    subject_name VARCHAR(255),
+    FOREIGN KEY (student_id) REFERENCES Students(student_id),
+    FOREIGN KEY (subject_name) REFERENCES Subjects(subject_name)
+);
+
+
+-- Insert data into Examinations table
+INSERT INTO Examinations (student_id, subject_name) VALUES
+(1, 'Math'),
+(1, 'Physics'),
+(1, 'Programming'),
+(2, 'Programming'),
+(1, 'Physics'),
+(1, 'Math'),
+(13, 'Math'),
+(13, 'Programming'),
+(13, 'Physics'),
+(2, 'Math'),
+(1, 'Math');
+
+-- Checking the data in the created tables:
+
+SELECT * FROM Students;
+SELECT * FROM Subjects;
+SELECT * FROM Examinations;
+
+
+-- ANSWER QUERY
+-- (CCOMPLEX QUERY, need more problems like this)
+SELECT
+    s.student_id,
+    s.student_name,
+    sub.subject_name,
+    COUNT(e.subject_name) AS attended_exams
+FROM
+    Students s
+CROSS JOIN
+    Subjects sub
+LEFT JOIN
+    Examinations e ON s.student_id = e.student_id AND sub.subject_name = e.subject_name
+GROUP BY
+    s.student_id,
+    s.student_name,
+    sub.subject_name
+ORDER BY
+    s.student_id,
+    sub.subject_name;
+
+
+/* 
+QUESTION_13:
+
+Write a solution to find managers with at least five direct reports.
+Return the result table in any order.
+The result format is in the following example.
+*/
+
+-- ANSWER 13:
+
+
+-- Create the Employees table
+CREATE TABLE Employees (
+    id INT PRIMARY KEY,
+    name VARCHAR(255),
+    department VARCHAR(255),
+    managerId INT
+);
+
+-- Insert records into the Employee table
+INSERT INTO Employees (id, name, department, managerId) VALUES
+(101, 'John', 'A', null),
+(102, 'Dan', 'A', 101),
+(103, 'James', 'A', 101),
+(104, 'Amy', 'A', 101),
+(105, 'Anne', 'A', 101),
+(106, 'Ron', 'B', 101);
+
+-- ANSWER QUERY
+
+SELECT E1.name
+FROM Employees E1
+JOIN (
+    SELECT managerId, COUNT(*) AS directReports
+    FROM Employees
+    GROUP BY managerId
+    HAVING COUNT(*) >= 5
+) E2 ON E1.id = E2.managerId;
+
+/* 
+QUESTION_14:
+The confirmation rate of a user is the number of 'confirmed' messages divided by 
+the total number of requested confirmation messages. The confirmation rate of a user 
+that did not request any confirmation messages is 0. Round the confirmation rate to two decimal places.
+Write a solution to find the confirmation rate of each user.
+
+Return the result table in any order.
+
+
+*/
+
+-- ANSWER 14:
+
+-- Create Signups table
+CREATE TABLE Signups (
+    user_id INT PRIMARY KEY,
+    time_stamp DATETIME
+);
+
+-- Insert data into Signups table
+INSERT INTO Signups (user_id, time_stamp) VALUES
+(3, '2020-03-21 10:16:13'),
+(7, '2020-01-04 13:57:59'),
+(2, '2020-07-29 23:09:44'),
+(6, '2020-12-09 10:39:37');
+
+-- Create Confirmations table
+CREATE TABLE Confirmations (
+    user_id INT,
+    time_stamp DATETIME,
+    action ENUM('confirmed', 'timeout'),
+    PRIMARY KEY (user_id, time_stamp),
+    FOREIGN KEY (user_id) REFERENCES Signups(user_id)
+);
+
+-- Insert data into Confirmations table
+INSERT INTO Confirmations (user_id, time_stamp, action) VALUES
+(3, '2021-01-06 03:30:46', 'timeout'),
+(3, '2021-07-14 14:00:00', 'timeout'),
+(7, '2021-06-12 11:57:29', 'confirmed'),
+(7, '2021-06-13 12:58:28', 'confirmed'),
+(7, '2021-06-14 13:59:27', 'confirmed'),
+(2, '2021-01-22 00:00:00', 'confirmed'),
+(2, '2021-02-28 23:59:59', 'timeout');
+
+-- Checking data in the created tables:
+
+SELECT * FROM Confirmations;
+SELECT * FROM Signups;
+
+-- ANSWER QUERY
+
+-- SELECT s.user_id, round(avg(if(c.action="confirmed",1,0)),2) AS confirmation_rate
+-- FROM Signups AS s LEFT JOIN Confirmations AS c ON s.user_id= c.user_id GROUP BY user_id;
+
+SELECT
+    s.user_id,
+    ROUND(
+        AVG(IF(c.action = 'confirmed', 1, 0)),
+        2
+    ) AS confirmation_rate
+FROM
+    Signups AS s
+LEFT JOIN
+    Confirmations AS c ON s.user_id = c.user_id
+GROUP BY
+    user_id;
+
+/* 
+QUESTION_15:
+
+Write a solution to report the movies with an odd-numbered ID and a description that is not "boring".
+Return the result table ordered by rating in descending order.
+
+*/
+
+-- ANSWER 15:
+
+-- Creating the Cinema Table
+
+CREATE TABLE Cinema (
+    id INT PRIMARY KEY,
+    movie VARCHAR(255),
+    description VARCHAR(255),
+    rating FLOAT
+);
+
+-- Entering data into cinema table
+
+INSERT INTO Cinema (id, movie, description, rating) VALUES
+(1, 'War', 'great 3D', 8.9),
+(2, 'Science', 'fiction', 8.5),
+(3, 'irish', 'boring', 6.2),
+(4, 'Ice song', 'Fantasy', 8.6),
+(5, 'House card', 'Interesting', 9.1);
+
+-- ANSWER QUERY
+
+SELECT * FROM Cinema
+WHERE id % 2 <> 0 AND description <> 'boring'
+ORDER BY rating DESC;
+
+/* 
+QUESTION_16:
+
+Write a solution to find the average selling price for each product. average_price should be rounded to 2 decimal places.
+Return the result table in any order.
+
+*/
+
+-- ANSWER 16:
+
+-- Create Prices table
+CREATE TABLE Prices (
+    product_id INT,
+    start_date DATE,
+    end_date DATE,
+    price INT,
+    PRIMARY KEY (product_id, start_date, end_date)
+);
+
+-- Insert data into Prices table
+INSERT INTO Prices (product_id, start_date, end_date, price)
+VALUES
+    (1, '2019-02-17', '2019-02-28', 5),
+    (1, '2019-03-01', '2019-03-22', 20),
+    (2, '2019-02-01', '2019-02-20', 15),
+    (2, '2019-02-21', '2019-03-31', 30);
+
+-- Create UnitsSold table
+CREATE TABLE UnitsSold (
+    product_id INT,
+    purchase_date DATE,
+    units INT
+);
+
+-- Insert data into UnitsSold table
+INSERT INTO UnitsSold (product_id, purchase_date, units)
+VALUES
+    (1, '2019-02-25', 100),
+    (1, '2019-03-01', 15),
+    (2, '2019-02-10', 200),
+    (2, '2019-03-22', 30);
+
+-- ANSWER QUERY:
+/*
+SELECT
+    u.product_id,
+    ROUND(SUM(p.price * u.units) / SUM(u.units), 2) AS average_price
+FROM
+    UnitsSold u
+JOIN
+    Prices p ON u.product_id = p.product_id
+    AND u.purchase_date BETWEEN p.start_date AND p.end_date
+GROUP BY
+    u.product_id;
+*/    
+    
+-- ACCEPETED QUERY:
+    
+    SELECT
+    p.product_id,
+    IFNULL(
+        ROUND(SUM(p.price * u.units) / SUM(u.units), 2),
+        0
+    ) AS average_price
+FROM
+    Prices AS p
+LEFT JOIN
+    UnitsSold AS u
+ON
+    p.product_id = u.product_id
+    AND u.purchase_date BETWEEN p.start_date AND p.end_date
+GROUP BY
+    p.product_id;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
