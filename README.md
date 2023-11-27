@@ -8,4 +8,5 @@ Contains all materials related to interview preparation and the data changelog
 24-11-2023 21:26:43 SQL Questions Done till 16 and 3 more Pandas problem solved
 25-11-2023 21:08:11 hard reset done to uncommit changes
 27-11-2023 21:02:37 Moved "Python Roadmap script.ipynb" file from "Roadmaps" repository to "Study-Plan" [TESTING]
+28-11-2023 00:07:35 Adding open source contributions word doc file
 
